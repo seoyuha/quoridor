@@ -1,0 +1,22 @@
+{
+  "name": "english-quoridor-classroom",
+  "version": "2.0.0",
+  "private": true,
+  "description": "영어 문제를 풀어야 움직일 수 있는 교실용 2인 쿼리도 (자동 매칭 · AI · 교사 대시보드)",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/engine.test.js && node tests/speech.test.js && node tests/classroom.test.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "express": "^4.21.2",
+    "multer": "^2.0.2",
+    "qrcode": "^1.5.4",
+    "selfsigned": "^2.4.1",
+    "socket.io": "^4.8.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.1"
+  }
+}

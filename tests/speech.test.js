@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const S = require('../speech');
+const ok = (t, h) => S.evaluate(t, [h]).success;
+assert.ok(ok('How can I get to the museum?', 'how can i get to the museum'));
+assert.ok(ok("I'd like spaghetti, please.", 'I would like spaghetti please'));
+assert.ok(ok('I am eleven years old.', 'I am 11 years old'));
+assert.ok(ok('Take bus number 3.', 'take bus number three'));
+assert.ok(ok('She has long curly hair.', 'she has long curly hairs'), '철자 1글자 차이 허용');
+assert.ok(ok('Go straight and turn left.', 'go straight and turn left'));
+assert.ok(!ok('Go straight and turn left.', 'go straight and turn right'), '다른 단어는 실패');
+assert.ok(!ok('How can I get to the museum?', 'museum'), '일부만 말하면 실패');
+assert.ok(!ok('I usually go to school by bus.', ''), '빈 인식');
+assert.ok(S.evaluate('Turn left.', ['turn right', 'turn left']).success, '여러 인식 후보 중 최선 선택');
+console.log('✓ speech: 대소문자·문장부호·축약형·숫자·철자 1글자 차이 허용, 다른 문장은 실패');

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>영어 쿼리도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="/assets/ui/pawn_blue.png">
+</head>
+<body>
+
+<!-- ═════════ 첫 화면 ═════════ -->
+<section class="view" id="v-home">
+  <div class="title-screen" role="main">
+    <img class="title-art" src="/assets/title.jpg" alt="English Quoridor - 영어로 가는 승리의 길!">
+    <button class="hot hot-student" data-open="mStudent" aria-label="학생 게임 시작"></button>
+    <button class="hot hot-teacher" data-open="mTeacher" aria-label="교사용 관리"></button>
+    <button class="hot hot-sm hot-howto" data-open="mHowto" aria-label="게임 방법"></button>
+    <button class="hot hot-sm hot-preview" data-open="mPreview" aria-label="문제 미리보기"></button>
+    <button class="hot hot-sm hot-rank" data-open="mRank" aria-label="오늘의 순위"></button>
+    <button class="hot hot-sm hot-settings" data-open="mSettings" aria-label="설정"></button>
+  </div>
+</section>
+
+<div class="modal" id="mStudent"><div class="panel sheet">
+  <button class="x" data-close aria-label="닫기">✕</button>
+  <div class="sheet-head blue"><img src="/assets/ui/pawn_blue.png" alt=""><div><h2>학생 게임 시작</h2><p>친구와 대전하며 영어를 배워요!</p></div></div>
+  <label>나의 캐릭터 고르기</label>
+  <div class="av-pick" id="avPick"></div>
+  <label for="joinCode">선생님이 알려준 방 코드</label>
+  <input id="joinCode" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="예: 7K3B">
+  <label for="joinName">내 이름</label>
+  <input id="joinName" maxlength="12" autocomplete="off" placeholder="예: 김하늘">
+  <button class="gbtn green big" id="joinBtn"><span class="ic">▶</span>입장하기</button>
+</div></div>
+<div class="modal" id="mTeacher"><div class="panel sheet">
+  <button class="x" data-close aria-label="닫기">✕</button>
+  <div class="sheet-head orange"><img src="/assets/ui/av_band.png" alt="" class="round"><div><h2>교사용 관리</h2><p>수업 설정, 경기 관전, 결과 확인</p></div></div>
+  <label>오늘의 영어 활동 <small>(수업 중에도 바꿀 수 있어요)</small></label>
+  <div class="seg" id="newMode"><button data-v="quiz" class="on">📄 문제 풀기</button><button data-v="speak">🎤 말하기</button></div>
+  <label>문제 단원 <small>(여러 단원을 함께 골라도 돼요)</small></label>
+  <div class="unit-pick" id="newUnits"></div>
+  <label for="teacherPin">교사 PIN <small>(서버에 설정한 경우만)</small></label>
+  <input id="teacherPin" type="password" autocomplete="off" placeholder="없으면 비워 두세요">
+  <button class="imgbtn" id="createBtn" aria-label="방 만들기"><img src="/assets/ui/btn_room.png" alt="방 만들기"></button>
+  <button class="gbtn wood big" id="resumeTeacherBtn" style="display:none"><span class="ic">↻</span>하던 교실로 돌아가기</button>
+</div></div>
+<div class="modal" id="mHowto"><div class="panel sheet">
+  <button class="x" data-close aria-label="닫기">✕</button>
+  <div class="sheet-head purple"><img src="/assets/ui/t_book.png" alt="" class="round"><div><h2>게임 방법</h2><p>규칙을 알아보고 연습해요!</p></div></div>
+  <ol class="howto">
+    <li><b>입장</b> — 캐릭터를 고르고, 4자리 방 코드와 이름을 넣어요.</li>
+    <li><b>자동 매칭</b> — 선생님이 시작하면 2명씩 짝이 지어져요. 짝이 없으면 🤖 AI와 대결해요.</li>
+    <li><b>영어 미션</b> — 내 차례마다 미션이 나와요.<br>📄 <b>문제 풀기</b>: 5개 중 정답을 고르면 통과! 틀리면 차례가 넘어가요.<br>🎤 <b>말하기</b>: 문장을 소리 내어 읽으면 AI가 성공·실패를 알려줘요. 기회는 2번!</li>
+    <li><b>행동</b> — 통과하면 <b>말 이동</b>(빛나는 칸) 또는 <b>벽 놓기</b>(나무 벽 10개) 중 하나! 벽으로 길을 완전히 막을 수는 없어요.</li>
+    <li><b>승리</b> — 맞은편 <b style="color:#d9473f">빨간 줄</b>에 먼저 도착하면 승리! 끝나면 자동으로 다음 상대와 경기해요.</li>
+    <li><b>최종 순위</b> — 선생님이 게임을 끝내면 총점(승 10점 · 무 5점 · 영어 미션 성공 1점)으로 순위가 정해져요.</li>
+  </ol>
+</div></div>
+<div class="modal" id="mPreview"><div class="panel sheet wide">
+  <button class="x" data-close aria-label="닫기">✕</button>
+  <div class="sheet-head blue"><img src="/assets/ui/magnifier.png" alt="" class="round"><div><h2>문제 미리보기</h2><p>선생님이 엑셀로 올린 문제가 실제 게임에 나와요. (기본 예시)</p></div></div>
+  <div class="seg" id="pvUnit"></div>
+  <div class="seg sm" id="pvKind" style="margin-top:8px"><button data-v="quiz" class="on">📄 문제 풀기</button><button data-v="speak">🎤 말하기</button></div>
+  <div id="pvBody" class="pv"></div>
+</div></div>
+<div class="modal" id="mRank"><div class="panel sheet wide">
+  <button class="x" data-close aria-label="닫기">✕</button>
+  <div class="sheet-head yellow"><img src="/assets/ui/ic_trophy.png" alt="" class="round"><div><h2>오늘의 순위</h2><p>방 코드를 넣으면 실시간 순위를 볼 수 있어요.</p></div></div>
+  <div class="row"><input id="rkCode" maxlength="4" placeholder="방 코드" style="max-width:190px;text-transform:uppercase"><button class="gbtn blue" id="rkBtn">순위 보기</button></div>
+  <div id="rkBody" style="margin-top:12px"></div>
+</div></div>
+<div class="modal" id="mSettings"><div class="panel sheet">
+  <button class="x" data-close aria-label="닫기">✕</button>
+  <div class="sheet-head wood"><img src="/assets/ui/ic_mic.png" alt="" class="round"><div><h2>설정 · 마이크 점검</h2><p>말하기 수업 전에 이 기기에서 확인해 보세요.</p></div></div>
+  <div id="envCheck" class="envcheck"></div>
+  <div class="say-card" style="margin-top:10px"><button class="listen" id="testListen" aria-label="듣기"><img src="/assets/ui/ic_sound.png" alt=""></button><div><div class="say">Hello! Nice to meet you.</div><div class="mean">안녕! 만나서 반가워.</div></div></div>
+  <button class="gbtn green big" id="testMic"><img class="ici" src="/assets/ui/ic_mic.png" alt="">눌러서 위 문장 읽어 보기</button>
+  <div id="testResult" class="note" style="display:none"></div>
+  <label>🔊 듣기 속도</label>
+  <div class="seg" id="ttsRate"><button data-v="0.7">천천히</button><button data-v="0.85" class="on">보통</button><button data-v="1">빠르게</button></div>
+</div></div>
+
+<!-- ═════════ 학생 ═════════ -->
+<section class="view" id="v-student">
+  <header class="woodbar">
+    <img class="bar-logo" src="/assets/ui/logo.png" alt="영어 쿼리도">
+    <div class="chip"><small>방 코드</small><b id="sCode">----</b></div>
+    <div class="chip"><small>오늘의 활동</small><b id="sMode">-</b></div>
+    <div class="chip me-chip"><img id="sAv" class="av sm" src="/assets/ui/av_boy.png" alt=""><div><small id="sName">나</small><b><img src="/assets/ui/st_crown.png" class="ic16" alt=""><span class="w" id="sW">0</span>승 <span class="l" id="sL">0</span>패 · 승률 <span id="sRate">0%</span></b></div></div>
+    <span class="net" id="sNet" title="서버 연결 상태">●</span>
+  </header>
+
+  <div class="pane" id="p-wait">
+    <div class="panel title-banner"><img src="/assets/ui/magnifier.png" alt=""><div><h1 id="waitTitle">상대를 <em>자동으로</em> 찾고 있어요!</h1><p id="waitSub">잠시만 기다려 주세요. 곧 게임이 시작됩니다!</p></div></div>
+    <div class="wait-grid">
+      <div class="panel vs-stage">
+        <div class="vs-card blue"><img id="waitMeAv" class="av xl" src="/assets/ui/av_boy.png" alt=""><b id="waitMe">나</b><small>준비 완료!</small></div>
+        <img class="vs-img" src="/assets/ui/vs.png" alt="VS">
+        <div class="vs-card red unknown"><div class="av xl q">?</div><b>누구일까?</b><small><span class="spin"></span> 매칭 중...</small></div>
+        <div class="pill-note" id="waitTip">좋은 상대를 찾고 있어요...</div>
+      </div>
+      <img class="ai-card" src="/assets/ui/ai_card.png" alt="AI와도 대결할 수 있어요! 짝이 맞지 않는 경우 AI와 자동으로 매칭됩니다.">
+    </div>
+    <div class="wait-bottom">
+      <div class="panel framed"><div class="frame-title"><img src="/assets/ui/pawn_blue.png" alt=""><img src="/assets/ui/pawn_red.png" alt="" class="ov"> 경기 중인 친구들</div><div class="friend-games" id="friendGames"></div></div>
+      <div class="panel framed"><div class="frame-title"><img src="/assets/ui/ic_trophy.png" alt=""> 내 전적</div>
+        <div class="stat-tile"><img src="/assets/ui/st_crown.png" alt=""><span>승리</span><b class="w" id="msW">0</b></div>
+        <div class="stat-tile"><img src="/assets/ui/st_x.png" alt=""><span>패배</span><b class="l" id="msL">0</b></div>
+        <div class="stat-tile"><img src="/assets/ui/st_bars.png" alt=""><span>승률</span><b class="g" id="msR">0%</b></div>
+        <img class="bubble-img" src="/assets/ui/bub_fight.png" alt="화이팅!">
+      </div>
+    </div>
+  </div>
+
+  <div class="pane" id="p-game">
+    <div class="players">
+      <div class="pcard blue" id="pcMe"><img id="pcMeAv" class="av" src="/assets/ui/av_boy.png" alt=""><div><b id="pcMeName">나</b><small><img src="/assets/ui/st_crown.png" class="ic16" alt=""><span id="pcMeRec"></span></small></div><span class="turnflag">내 차례</span></div>
+      <div class="pcard red" id="pcOpp"><img id="pcOppAv" class="av" src="/assets/ui/av_girl.png" alt=""><div><b id="pcOppName">상대</b><small><img src="/assets/ui/st_crown.png" class="ic16" alt=""><span id="pcOppRec"></span></small></div><span class="turnflag">상대 차례</span></div>
+      <div class="info-tile" id="timer"><img src="/assets/ui/stopwatch.png" alt=""><div><small>남은 시간</small><b id="timerTxt">90초</b><i class="tbar"><i id="timerBar"></i></i></div></div>
+      <div class="info-tile"><img src="/assets/ui/st_wall.png" alt=""><div><small>남은 벽 (나 / 상대)</small><b><span class="w" id="wlMe2">10</span> / <span class="l" id="wlOpp2">10</span></b></div></div>
+    </div>
+    <div class="game-grid">
+      <div class="board-area">
+        <div class="wallstack blue"><small>내 벽</small><b id="wlMe">10</b><div class="sticks" id="wsMe"></div></div>
+        <div class="board-wrap"><canvas id="board" width="1000" height="1000"></canvas><div class="paused-cover" id="pausedCover"><img src="/assets/ui/ic_pause.png" alt=""><span>선생님이 잠시 멈췄어요</span></div></div>
+        <div class="wallstack red"><small>상대 벽</small><b id="wlOpp">10</b><div class="sticks" id="wsOpp"></div></div>
+      </div>
+      <div class="panel mission" id="mission"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="resultOverlay"><div class="result" id="resultBox"></div></div>
+  <div class="pane" id="p-final"><div id="sFinal"></div></div>
+</section>
+
+<!-- ═════════ 교사 ═════════ -->
+<section class="view" id="v-teacher">
+  <header class="woodbar t-bar">
+    <img class="bar-logo" src="/assets/ui/logo.png" alt="영어 쿼리도">
+    <div class="chip code-chip"><small>방 코드</small><b id="tCode">----</b><span class="chip-btns"><button class="mini" id="copyCode" title="방 코드 복사">⧉</button><button class="mini" id="qrBtn" title="학생 접속 QR">▦</button></span></div>
+    <div class="chip mode-chip"><small>영어 활동</small><div class="seg dark" id="tMode"><button data-v="quiz">📄 문제 풀기</button><button data-v="speak">🎤 말하기</button></div></div>
+    <button class="chip unit-chip" id="tUnitChip" title="문제 단원 바꾸기"><small>문제 단원 ✎</small><b id="tUnit">-</b></button>
+    <div class="chip"><small>차례 시간</small><select id="tTurnSec"><option value="45">45초</option><option value="60">60초</option><option value="90" selected>90초</option><option value="120">120초</option><option value="180">180초</option></select></div>
+    <div class="t-actions">
+      <button class="imgbtn start" id="tStart" aria-label="게임 시작"><img src="/assets/ui/btn_start.png" alt="게임 시작"></button>
+      <button class="gbtn blue" id="tPause" disabled><img class="ici" id="tPauseIc" src="/assets/ui/ic_pause.png" alt=""><span id="tPauseTx">일시정지</span></button>
+      <button class="iconbtn home-btn" title="첫 화면으로"><img src="/assets/ui/ic_exit.png" alt="첫 화면"></button>
+    </div>
+  </header>
+  <div class="t-url" id="tUrl"></div>
+  <div id="tLive">
+    <nav class="woodtabs" id="tTabs">
+      <button data-v="overview" class="on"><img src="/assets/ui/t_bars.png" alt="">전체 현황</button>
+      <button data-v="live"><img src="/assets/ui/t_live.png" alt="">실시간 관전</button>
+      <button data-v="records"><img src="/assets/ui/t_people.png" alt="">학생 기록</button>
+      <button data-v="bank"><img src="/assets/ui/t_book.png" alt="">문제 관리</button>
+      <button data-v="finish"><img src="/assets/ui/t_power.png" alt="">수업 종료</button>
+    </nav>
+    <div class="t-banner" id="tBanner"></div>
+    <div class="tab" id="tab-overview">
+      <div class="kpis">
+        <div class="panel kpi"><img src="/assets/ui/k_students.png" alt=""><div><small>참여 학생</small><b><span id="tsStudents">0</span>명 <em id="tsMax">/ 30</em></b></div></div>
+        <div class="panel kpi"><img src="/assets/ui/k_swords.png" alt=""><div><small>진행 중인 경기</small><b><span id="tsGames">0</span>경기</b></div></div>
+        <div class="panel kpi"><img src="/assets/ui/ic_card.png" alt=""><div><small>매칭 대기</small><b><span id="tsWait">0</span>명</b></div></div>
+        <div class="panel kpi"><img src="/assets/ui/k_robot.png" alt=""><div><small>AI와 대결 중</small><b><span id="tsAI">0</span>명</b></div></div>
+      </div>
+      <div id="helpList"></div>
+      <div class="ov-grid">
+        <div class="panel framed"><div class="frame-title"><img src="/assets/ui/t_live.png" alt=""> 경기 한눈에 보기 <button class="gbtn wood sm" data-goto="live">크게 보기 ›</button></div><div class="match-grid compact" id="tMatchesMini"></div></div>
+        <div class="panel framed"><div class="frame-title"><img src="/assets/ui/ic_trophy.png" alt=""> 전체 순위 <small class="muted" id="tRankCount"></small></div><div id="tRanking"></div><p class="muted small">총점 = 승 10점 + 무 5점 + 영어 미션 성공 1점</p></div>
+      </div>
+    </div>
+    <div class="tab" id="tab-live">
+      <div class="panel framed"><div class="frame-title"><img src="/assets/ui/t_live.png" alt=""> 실시간 경기 현황 <span class="view-toggle" id="tView"><button data-v="cards" class="on"><img src="/assets/ui/ic_card.png" alt="">카드 뷰</button><button data-v="list"><img src="/assets/ui/ic_list.png" alt="">리스트 뷰</button></span></div>
+        <div class="match-grid" id="tMatches"></div></div>
+    </div>
+    <div class="tab" id="tab-records">
+      <div class="panel framed"><div class="frame-title"><img src="/assets/ui/t_people.png" alt=""> 학생 기록 <span class="seg sm" id="tRec"><button data-v="roster" class="on">학생 관리</button><button data-v="learn">영어 학습 분석</button><button data-v="wrong">오답 분석</button></span></div><div id="tRecBody"></div></div>
+    </div>
+    <div class="tab" id="tab-bank">
+      <div class="panel framed" style="margin-bottom:16px"><div class="frame-title"><img src="/assets/ui/t_book.png" alt=""> 오늘 낼 문제 고르기 <small class="muted">누르면 켜지고 꺼져요 · 여러 개를 함께 켜면 섞어서 나와요 · 수업 중에도 바꿀 수 있어요</small></div>
+        <div class="unit-cards" id="unitCards"></div><div id="activeInfo" class="active-info"></div></div>
+      <div class="bank-grid">
+        <div class="panel bank" data-kind="speak">
+          <div class="frame-title"><img src="/assets/ui/ic_mic.png" alt=""> 직접 올리기 · 말하기 문장 <a class="gbtn wood sm" href="/api/template/speak.xlsx">⬇ 예시 파일</a></div>
+          <p class="muted">학생들이 읽을 영어 문장. 첫 줄 제목: <b>문장</b>, (선택) <b>뜻</b></p>
+          <label class="drop"><input type="file" accept=".xlsx,.xls,.csv"><img src="/assets/ui/ic_excel.png" alt=""><b>엑셀 파일 올리기</b><span class="gbtn blue sm">파일 선택하기</span><small>.xlsx · .xls · .csv · 최대 5,000문항 · 끌어다 놓아도 돼요</small></label>
+          <div class="bank-info"></div>
+        </div>
+        <div class="panel bank" data-kind="quiz">
+          <div class="frame-title"><img src="/assets/ui/t_book.png" alt=""> 직접 올리기 · 5지선다 문제 <a class="gbtn wood sm" href="/api/template/quiz.xlsx">⬇ 예시 파일</a></div>
+          <p class="muted">첫 줄 제목: <b>문제, 보기1~보기5, 정답</b>(정답은 1~5 숫자)</p>
+          <label class="drop"><input type="file" accept=".xlsx,.xls,.csv"><img src="/assets/ui/ic_excel.png" alt=""><b>엑셀 파일 올리기</b><span class="gbtn blue sm">파일 선택하기</span><small>.xlsx · .xls · .csv · 최대 5,000문항 · 끌어다 놓아도 돼요</small></label>
+          <div class="bank-info"></div>
+        </div>
+      </div>
+      <p class="muted center">엑셀을 올리면 '직접 올린 문제'가 자동으로 켜져요. 단원 문제와 함께 내고 싶으면 위에서 단원 카드도 켜 주세요. 말하기와 문제 풀기는 따로 보관돼요.</p>
+    </div>
+    <div class="tab" id="tab-finish">
+      <div class="panel finish-card">
+        <img src="/assets/ui/podium.png" alt="">
+        <h2>수업을 마치고 최종 순위를 정할까요?</h2>
+        <p class="muted">진행 중인 경기는 기록되지 않고, 지금까지의 총점으로 순위가 확정돼요. 확정되면 학생 화면에도 순위가 나와요.</p>
+        <div class="row center"><button class="gbtn red big" id="tEnd" disabled><img class="ici" src="/assets/ui/t_power.png" alt="">게임 종료 · 최종 순위 확정</button><button class="gbtn wood big" id="dlMid"><img class="ici" src="/assets/ui/ic_excel.png" alt="">중간 결과 엑셀 저장</button></div>
+      </div>
+    </div>
+  </div>
+  <div id="tFinal"></div>
+</section>
+
+<div class="modal" id="qrModal"><div class="panel sheet center">
+  <button class="x" data-close aria-label="닫기">✕</button>
+  <h2>📱 학생 접속</h2><img id="qrImg" alt="QR" class="qr"><p id="qrText" class="qr-text"></p>
+  <p class="muted small">태블릿에서 처음 접속하면 '안전하지 않음' 경고가 나올 수 있어요. <b>고급 → 계속</b>을 누르면 됩니다(마이크 사용을 위한 학교용 보안 주소).</p>
+</div></div>
+<div id="toast"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/engine.js"></script>
+<script src="/board.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
