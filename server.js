@@ -594,6 +594,9 @@ function lanAddresses() {
   return out;
 }
 app.get('/api/info', (_req, res) => {
+  // 인터넷 서버(Render 등)에 올린 경우: 그 주소를 학생 접속 주소로 안내
+  const pubUrl = (process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL || '').replace(/\/$/, '');
+  if (pubUrl) return res.json({ ips: [], port: PORT, httpsPort: null, studentUrl: pubUrl });
   const ips = lanAddresses();
   res.json({ ips, port: PORT, httpsPort: USE_HTTPS && servers.length > 1 ? HTTPS_PORT : null,
     studentUrl: ips[0] ? (USE_HTTPS && servers.length > 1 ? `https://${ips[0]}:${HTTPS_PORT}` : `http://${ips[0]}:${PORT}`) : null });
