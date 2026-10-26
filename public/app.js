@@ -122,6 +122,8 @@
   };
   $$('.home-btn').forEach(b => b.onclick = () => { if (!confirm('첫 화면으로 갈까요? (교실은 그대로 유지되고, 다시 들어오면 이어집니다)')) return; location.href = '/?home=1'; });
 
+  // 저장된 교실이 없으면 서버 연결을 기다리지 않고 첫 화면을 바로 보여 줌
+  if (qp.get('home') || (!store.get('eq-teacher', true) && !store.get('eq-student'))) show('home');
   /* ── 연결 ── */
   socket.on('connect', async () => {
     $('#sNet')?.classList.remove('off');
