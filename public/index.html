@@ -91,6 +91,7 @@
     <div class="chip"><small>방 코드</small><b id="sCode">----</b></div>
     <div class="chip"><small>오늘의 활동</small><b id="sMode">-</b></div>
     <div class="chip me-chip"><img id="sAv" class="av sm" src="/assets/ui/av_boy.png" alt=""><div><small id="sName">나</small><b><img src="/assets/ui/st_crown.png" class="ic16" alt=""><span class="w" id="sW">0</span>승 <span class="l" id="sL">0</span>패 · 승률 <span id="sRate">0%</span></b></div></div>
+    <button class="fs-btn" id="fsBtn" type="button" title="전체화면">⛶ <span>전체화면</span></button>
     <span class="net" id="sNet" title="서버 연결 상태">●</span>
   </header>
 
@@ -214,10 +215,16 @@
   <div id="tFinal"></div>
 </section>
 
-<div class="modal watch-modal" id="mWatch"><div class="panel sheet watch">
-  <button class="x" data-close aria-label="닫기">✕</button>
+<!-- 교사 관전 모드(학생 화면처럼 크게 보기) -->
+<div class="watch-mode" id="watchMode">
+  <header class="woodbar watch-bar">
+    <span class="watch-badge">👀 관전 모드</span>
+    <b id="watchTitle">경기</b>
+    <div class="seg dark" id="watchSide"></div>
+    <button class="gbtn red" id="watchCancel">✖ 관전 취소</button>
+  </header>
   <div id="watchBody"></div>
-</div></div>
+</div>
 <div class="modal" id="qrModal"><div class="panel sheet center">
   <button class="x" data-close aria-label="닫기">✕</button>
   <h2>📱 학생 접속</h2><img id="qrImg" alt="QR" class="qr"><p id="qrText" class="qr-text"></p>

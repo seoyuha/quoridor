@@ -424,3 +424,112 @@ table.rank tr.me td{box-shadow:inset 0 0 0 9999px rgba(45,111,224,.13)}
 .w-box ol{margin:6px 0 0;padding-left:22px}.w-box li{margin:2px 0}.w-box li.ans{color:var(--green-d);font-weight:700}
 .w-ended{position:absolute;inset:0;display:grid;place-items:center;background:rgba(40,20,6,.55);color:#fff;font-family:var(--font-h);font-size:30px;text-align:center;border-radius:20px}
 @media (max-width:900px){.w-grid{grid-template-columns:1fr}}
+
+/* ───── 전체화면 버튼 ───── */
+.fs-btn{border:3px solid var(--wood-ll);background:linear-gradient(#fffaf0,#f6e6c8);border-radius:14px;padding:6px 12px;font-family:var(--font-h);font-size:16px;color:var(--wood-dd);cursor:pointer;box-shadow:0 3px 0 var(--wood-dd);white-space:nowrap}
+.fs-btn.on{background:linear-gradient(#ffe08a,#ffc93a)}
+
+/* ───── 학생 경기 화면: 기기 화면에 딱 맞춤(스크롤 없음) ───── */
+body.in-game{overflow:hidden;height:100dvh}
+body.in-game #v-student.on{height:100dvh;display:flex;flex-direction:column}
+body.in-game .woodbar{position:static;padding:4px 10px;gap:8px;flex-wrap:nowrap}
+body.in-game .bar-logo{height:40px}
+body.in-game .woodbar .chip{padding:2px 10px;min-width:0}
+body.in-game .woodbar .chip b{font-size:17px}
+body.in-game .woodbar .chip small{font-size:11px}
+body.in-game .woodbar .chip:not(.me-chip){display:none}
+body.in-game .me-chip .av{width:30px;height:30px}
+body.in-game .fs-btn{padding:4px 10px;font-size:14px}
+body.in-game #p-game.on{flex:1;min-height:0;display:flex;flex-direction:column;padding:6px 8px;max-width:none;width:100%}
+body.in-game .players{grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:6px}
+body.in-game .players .info-tile:last-child{display:none}
+body.in-game .pcard{padding:3px 12px 3px 3px;gap:8px;border-width:3px}
+body.in-game .pcard .av{width:40px;height:40px}
+body.in-game .pcard b{font-size:17px}
+body.in-game .pcard small{font-size:12px}
+body.in-game .pcard .turnflag{top:-9px;font-size:12px;padding:0 10px}
+body.in-game .info-tile{padding:2px 10px;min-width:0;border-width:3px;box-shadow:0 2px 0 var(--wood-l)}
+body.in-game .info-tile img{height:30px}
+body.in-game .info-tile b{font-size:19px}
+body.in-game .info-tile small{font-size:11px}
+body.in-game .tbar{width:70px}
+body.in-game .game-grid{flex:1;min-height:0;display:grid;gap:12px}
+body.in-game .game-grid.land{grid-template-columns:auto var(--mw);grid-template-rows:minmax(0,1fr);align-items:start;justify-content:center}
+body.in-game .game-grid.port{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+body.in-game .board-area{grid-template-columns:var(--stk) var(--bs) var(--stk);gap:6px;justify-content:center;align-items:start}
+body.in-game .board-wrap{width:var(--bs);max-width:none;min-width:0;margin:0}
+body.in-game #board{filter:drop-shadow(0 6px 8px rgba(50,22,4,.4))}
+body.in-game .wallstack{padding:4px 2px;border-width:3px;box-shadow:0 2px 0 var(--wood-l)}
+body.in-game .wallstack small{font-size:10px}
+body.in-game .wallstack b{font-size:22px}
+body.in-game .sticks{gap:3px}
+body.in-game .sticks i{width:calc(var(--stk) - 14px);height:9px}
+body.in-game .mission{min-height:0;height:100%;overflow-y:auto;padding:10px 12px;gap:8px;border-width:4px;-webkit-overflow-scrolling:touch}
+body.in-game .game-grid.land .mission{max-height:var(--bs)}
+body.in-game .mission .m-head{font-size:18px}
+body.in-game .mission .qcard{font-size:19px;padding:8px 12px}
+body.in-game .mission .opt{padding:6px 10px;font-size:16px}
+body.in-game .mission .opt .k{width:30px;height:30px;font-size:16px}
+body.in-game .mission .options{gap:6px}
+body.in-game .mission .say-card{padding:10px}
+body.in-game .mission .say-card .say{font-size:22px}
+body.in-game .mission .listen{width:46px;height:46px}
+body.in-game .mission .att{min-height:0;padding:6px}
+body.in-game .mission .gbtn.mic{padding:10px;font-size:18px}
+body.in-game .mission .act{padding:8px 14px;font-size:19px}
+body.in-game .mission .act img{height:40px}
+body.in-game .mission .ok-banner{width:min(160px,50%)}
+body.in-game .mission .rule{display:none}
+body.in-game .game-grid.port .options{grid-template-columns:1fr 1fr}
+@media (max-width:540px){body.in-game .sticks{display:none}body.in-game .bar-logo{height:32px}body.in-game .fs-btn span{display:none}}
+@media (max-height:520px){body.in-game .sticks{display:none}body.in-game .players{margin-bottom:4px}body.in-game .pcard .av{width:32px;height:32px}}
+
+/* ───── 교사 관전 모드 ───── */
+.mc .watch-btn{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:20px;padding:10px 22px;z-index:2}
+.mc.picked{border-color:var(--blue);box-shadow:0 0 0 4px rgba(45,111,224,.35)}
+.mc.picked .watch-btn{display:inline-flex}
+.mc{cursor:pointer}
+.watch-mode{display:none;position:fixed;inset:0;z-index:55;flex-direction:column;background:linear-gradient(rgba(255,240,210,.6),rgba(235,205,160,.8)),url(/assets/bg-blur.jpg) center/cover}
+.watch-mode.on{display:flex}
+body.watching{overflow:hidden}
+.watch-bar{position:static;flex-wrap:wrap}
+.watch-badge{background:var(--yellow);color:#5b3605;font-family:var(--font-h);font-size:18px;border-radius:999px;padding:4px 14px;border:3px solid #d99a0b}
+#watchTitle{font-family:var(--font-h);font-weight:400;font-size:22px;color:#fff3dc;margin-right:auto;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+#watchSide:empty{display:none}
+#watchSide button{font-size:15px;padding:6px 12px;color:#fff3dc}
+#watchSide button.on{color:#fff}
+#watchBody{flex:1;min-height:0;display:flex;flex-direction:column;padding:8px 12px}
+.wv-top{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-bottom:8px}
+.wv-top .pcard .av{width:46px;height:46px}.wv-top .pcard b{font-size:19px}.wv-top .pcard small{font-size:13px}
+.wv-top .pcard .turnflag{top:-10px;right:20px}
+.wv-top .info-tile.low b{color:var(--red)}
+.wv-grid{flex:1;min-height:0;display:grid;gap:14px;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+.wv-grid.land{grid-template-columns:auto minmax(320px,440px);grid-template-rows:minmax(0,1fr);justify-content:center;align-items:start}
+.wv-board{position:relative;width:var(--bs);margin:0 auto}
+.wv-board canvas{width:100%;aspect-ratio:1;display:block;filter:drop-shadow(0 8px 12px rgba(50,22,4,.4))}
+.wv-panel{min-height:0;max-height:100%;overflow-y:auto;gap:10px}
+.wv-grid.land .wv-panel{max-height:var(--bs)}
+.wv-wait{margin:auto;text-align:center}.wv-wait .big{font-size:70px}
+/* 휴대폰처럼 작은 화면: 선수 카드·상단바를 더 간단히 */
+@media (max-width:600px){
+  body.in-game .pcard{border-radius:16px;padding:3px 8px 3px 3px}
+  body.in-game .pcard small{display:none}
+  body.in-game .pcard b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  body.in-game .pcard>div{min-width:0}
+  body.in-game .pcard .av{width:34px;height:34px}
+  body.in-game .players{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px}
+  body.in-game .info-tile img{display:none}
+  body.in-game .tbar{width:48px}
+  body.in-game .me-chip>div>small{display:none}
+  body.in-game .me-chip b{font-size:13px;white-space:nowrap}
+  body.in-game .woodbar .me-chip{padding:2px 8px}
+}
+@media (max-height:520px){
+  body.in-game .pcard small{display:none}
+  body.in-game .woodbar{padding:2px 8px}
+  body.in-game .bar-logo{height:30px}
+  body.in-game .mission .m-head .tag{display:none}
+  body.in-game .mission .m-head{font-size:15px}
+  body.in-game .mission .qcard{font-size:16px}
+}
+@media (max-width:600px){body.in-game .woodbar .me-chip{min-width:0;max-width:52vw;overflow:hidden}body.in-game .me-chip b{overflow:hidden;text-overflow:ellipsis}}
