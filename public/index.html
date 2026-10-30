@@ -146,6 +146,7 @@
     <button class="chip unit-chip" id="tUnitChip" title="문제 단원 바꾸기"><small>문제 단원 ✎</small><b id="tUnit">-</b></button>
     <div class="chip"><small>차례 시간</small><select id="tTurnSec"><option value="30">30초</option><option value="45">45초</option><option value="60">60초</option><option value="90" selected>90초</option><option value="120">120초</option><option value="180">180초</option></select></div>
     <div class="chip"><small>벽 개수</small><select id="tWalls"><option value="5">5개</option><option value="6">6개</option><option value="7">7개</option><option value="8">8개</option><option value="9">9개</option><option value="10" selected>10개</option></select></div>
+    <div class="apply-box"><button class="gbtn green" id="tApply">✔ 적용</button><small id="tApplied">적용됨: 90초 · 벽 10개</small></div>
     <div class="t-actions">
       <button class="imgbtn start" id="tStart" aria-label="게임 시작"><img src="/assets/ui/btn_start.png" alt="게임 시작"></button>
       <button class="gbtn blue" id="tPause" disabled><img class="ici" id="tPauseIc" src="/assets/ui/ic_pause.png" alt=""><span id="tPauseTx">일시정지</span></button>
@@ -213,6 +214,10 @@
   <div id="tFinal"></div>
 </section>
 
+<div class="modal watch-modal" id="mWatch"><div class="panel sheet watch">
+  <button class="x" data-close aria-label="닫기">✕</button>
+  <div id="watchBody"></div>
+</div></div>
 <div class="modal" id="qrModal"><div class="panel sheet center">
   <button class="x" data-close aria-label="닫기">✕</button>
   <h2>📱 학생 접속</h2><img id="qrImg" alt="QR" class="qr"><p id="qrText" class="qr-text"></p>

@@ -174,8 +174,21 @@ function matchmake(r, { kickoff = false } = {}) {
     const b = cands[0]; waiting.splice(waiting.indexOf(b), 1);
     startMatch(r, a, b);
   }
-  // 짝이 없는 학생: 아직 안 붙어 본 친구가 경기 중이면 잠깐 기다리고, 없으면 AI와 매칭
+  // 짝이 없는 학생: ① AI와 대결 중인 '안 붙어 본' 친구가 있으면 그 AI 경기를 멈추고 바로 친구끼리 매칭
+  //                 ② 안 붙어 본 친구가 사람끼리 경기 중이면 잠깐 기다리고 ③ 없으면 AI와 매칭
   for (const a of left) {
+    const aiGames = [...r.matches.values()].filter(m => m.phase !== 'ended' && m.ids.includes('AI'))
+      .map(m => ({ m, s: r.students.get(m.ids.find(x => x !== 'AI')) }))
+      .filter(x => x.s && x.s !== a && online(x.s) && fresh(a, x.s))
+      .sort((x, y) => x.m.startedAt - y.m.startedAt);
+    if (aiGames.length) {
+      const { m, s } = aiGames[0];
+      endMatch(r, m, null, '새 친구와 매칭', { abort: true });
+      s.ai = Math.max(0, s.ai - 1); s.games = Math.max(0, s.games - 1);
+      if (s.socket) io.to(s.socket).emit('notice', { message: `새 친구(${a.name})가 기다리고 있어서 AI 경기를 멈추고 친구와 대결해요!` });
+      startMatch(r, a, s);
+      continue;
+    }
     const waited = now() - a.since;
     const unplayedBusy = [...r.students.values()].some(s => s !== a && online(s) && (s.state === 'match' || s.state === 'result') && fresh(a, s));
     if (kickoff || !unplayedBusy || waited >= SOLO_WAIT_MS) startMatch(r, a, null);
@@ -261,12 +274,15 @@ function teacherState(r) {
   const students = [...r.students.values()].map(s => ({ ...playerCard(s), score: scoreOf(s), missions: missions(s), stats: s.stats }));
   const help = [...r.matches.values()].filter(m => m.phase === 'question' && r.mode === 'speak' && (m.help || m.attempts > 0)).map(m => ({ matchId: m.id, no: m.no, name: nameOf(r, m.ids[m.board.turn]), attempts: m.attempts, help: m.help, text: m.q?.text || '' }));
   const totalGames = r.history.length, aiGames = r.history.filter(h => h.ids.includes('AI')).length;
+  // 교사 관전용: 진행 중인 경기의 현재 문제(정답 포함)와 최근 행동
+  const qs = {};
+  for (const m of r.matches.values()) if (m.phase !== 'ended') qs[m.id] = { q: m.q ? { mode: m.q.mode, unit: m.q.unit || null, text: m.q.text, options: m.q.options || null, answer: m.q.mode === 'quiz' ? m.q.answer : null, meaning: m.q.meaning || '' } : null, last: m.last || null, side: m.side };
   return { code: r.code, mode: r.mode, status: r.status, paused: r.paused, turnSec: r.turnSec, wallCount: r.wallCount || 10, maxStudents: MAX_STUDENTS,
     bank: { sel: r.sel, label: selLabel(r),
       units: UNIT_IDS.map(id => ({ id, no: UNITS[id].no, title: UNITS[id].title, topic: UNITS[id].topic, quiz: UNITS[id].quiz.length, speak: UNITS[id].speak.length })),
       custom: { quiz: r.custom.quiz.length, speak: r.custom.speak.length, name: r.custom.name },
       active: Object.fromEntries(['quiz', 'speak'].map(k => { const b = bankOf(r, k); return [k, { count: b.items.length, fallback: b.fallback, preview: b.items.slice(0, 5).map(x => (x.unit ? `[${x.unit}단원] ` : '') + x.text) }]; })) },
-    students, help, totalGames, aiGames, rankings: r.rankings,
+    students, help, qs, totalGames, aiGames, rankings: r.rankings,
     recent: r.history.slice(0, 8).map(h => ({ no: h.no, names: h.names, avs: h.avs, winner: h.winner, reason: h.reason, endedAt: h.endedAt, durationSec: h.durationSec, board: h.board })) };
 }
 function flush(r) {

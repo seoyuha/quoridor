@@ -145,6 +145,9 @@ function student(sock) { const st = { sock, me: null, pub: null }; sock.on('me',
   { // 방금 대결한 친구와 다시 붙지 않음 → 새 상대(또는 AI)
     const m1 = room.matches.get(room.students.get(turnS.sid).matchId), m2 = room.matches.get(room.students.get(other.sid).matchId);
     assert.ok(!m1.ids.includes(other.sid) && !m2.ids.includes(turnS.sid), '같은 상대와 재매칭 금지');
+    // AI와 대결하던 학생은 기다리던 새 친구가 생기면 바로 친구와 매칭
+    const aiSid = aiPlayer.sid, mAI = room.matches.get(room.students.get(aiSid).matchId);
+    assert.ok(!mAI.ids.includes('AI') && (mAI.ids.includes(turnS.sid) || mAI.ids.includes(other.sid)), 'AI 경기 학생이 새 친구와 바로 매칭');
   }
   console.log('✓ 이미 대결한 친구와는 다시 매칭되지 않음');
 

@@ -141,6 +141,7 @@
     if (!role) show('home');
   });
   socket.on('disconnect', () => { $('#sNet')?.classList.add('off'); if (role) toast('서버 연결이 끊겼어요. 다시 연결하는 중…', 4000); });
+  socket.on('notice', ({ message }) => toast(message, 5000));
   socket.on('kicked', ({ message }) => { store.del('eq-student'); role = null; show('home'); toast(message, 5000); });
   socket.on('pub', d => { pub = d; if (role === 'student') renderStudent(); if (role === 'teacher') renderTeacher(); });
   socket.on('me', d => { me = d; if (role === 'student') renderStudent(); });
@@ -403,8 +404,18 @@
   seg($('#tView'), tView, v => { tView = v; seg($('#tView'), v); $('#tMatches').classList.toggle('list', v === 'list'); });
   seg($('#tRec'), tRec, v => { tRec = v; seg($('#tRec'), v); if (v === 'wrong') loadAnalysis(); renderRecords(); });
   seg($('#tMode'), 'quiz', async v => { const r = await emit('teacher:mode', { mode: v }); toast(r.ok ? (v === 'speak' ? '말하기 활동으로 바꿨어요.' : '문제 풀기 활동으로 바꿨어요.') : r.message); });
-  $('#tWalls').onchange = async e => { const r = await emit('teacher:walls', { n: Number(e.target.value) }); toast(r.ok ? `벽 개수: ${e.target.value}개 (다음 경기부터 적용)` : r.message); };
-  $('#tTurnSec').onchange = async e => { const r = await emit('teacher:turnSec', { sec: Number(e.target.value) }); toast(r.ok ? `차례 시간: ${e.target.value}초 (다음 차례부터)` : r.message); };
+  // 차례 시간·벽 개수: 고른 뒤 [적용]을 눌러야 반영
+  const dirty = { sec: false, walls: false };
+  const paintDirty = () => { $('#tTurnSec').classList.toggle('dirty', dirty.sec); $('#tWalls').classList.toggle('dirty', dirty.walls); $('.apply-box').classList.toggle('dirty', dirty.sec || dirty.walls); if (dirty.sec || dirty.walls) $('#tApplied').textContent = '바꾼 값을 적용해 주세요'; };
+  $('#tTurnSec').onchange = () => { dirty.sec = Number($('#tTurnSec').value) !== ts?.turnSec; paintDirty(); };
+  $('#tWalls').onchange = () => { dirty.walls = Number($('#tWalls').value) !== (ts?.wallCount || 10); paintDirty(); };
+  $('#tApply').onclick = async () => {
+    const sec = Number($('#tTurnSec').value), n = Number($('#tWalls').value);
+    const r1 = await emit('teacher:turnSec', { sec }), r2 = await emit('teacher:walls', { n });
+    if (!r1.ok || !r2.ok) return toast((r1.ok ? r2 : r1).message);
+    dirty.sec = dirty.walls = false; paintDirty();
+    toast(`✅ 적용했어요: 차례 시간 ${sec}초(다음 차례부터) · 벽 ${n}개(다음 경기부터)`, 4500);
+  };
   $('#tStart').onclick = async () => { const r = await emit('teacher:start', {}); toast(r.ok ? '🎲 경기를 시작했어요! 2명씩 자동으로 매칭됩니다.' : r.message); };
   $('#tPause').onclick = async () => { const r = await emit('teacher:pause', {}); if (!r.ok) toast(r.message); };
   $('#tEnd').onclick = async () => { if (!confirm('게임을 끝내고 최종 순위를 확정할까요?\n(진행 중인 경기는 기록되지 않아요)')) return; const r = await emit('teacher:end', {}); if (!r.ok) toast(r.message); };
@@ -497,7 +508,8 @@
       let el = cache.get(m.id);
       if (!el) {
         el = document.createElement('div'); el.className = 'mc';
-        el.innerHTML = `<div class="mh"><span class="no"></span><span class="st"></span><span class="tm"></span></div><div class="vsr"><div class="pl blue"></div><img class="vsm" src="${UI}vs.png" alt="VS"><div class="pl red"></div></div><canvas width="${compact ? 300 : 420}" height="${compact ? 300 : 420}"></canvas><div class="ms"></div><div class="ap"></div>`;
+        el.innerHTML = `<div class="mh"><span class="no"></span><span class="st"></span><span class="tm"></span></div><div class="vsr"><div class="pl blue"></div><img class="vsm" src="${UI}vs.png" alt="VS"><div class="pl red"></div></div><canvas width="${compact ? 300 : 420}" height="${compact ? 300 : 420}"></canvas><div class="ms"></div><div class="ap"></div><span class="zoom">🔍 크게 보기</span>`;
+        el.addEventListener('click', e => { if (!e.target.closest('button')) openWatch(m.id); });
         grid.appendChild(el); cache.set(m.id, el);
       }
       const ai = m.ids.includes('AI');
@@ -520,7 +532,8 @@
     $('#tLive').style.display = live ? '' : 'none'; $('#tFinal').style.display = live ? 'none' : '';
     $('#tCode').textContent = ts.code;
     $('#tUrl').innerHTML = info?.studentUrl ? `학생 접속 주소: <b>${esc(info.studentUrl)}</b> · 방 코드 <b>${esc(ts.code)}</b>` : '';
-    seg($('#tMode'), ts.mode); $('#tTurnSec').value = String(ts.turnSec); $('#tWalls').value = String(ts.wallCount || 10); $('#tUnit').textContent = ts.bank.label;
+    seg($('#tMode'), ts.mode); if (!dirty.sec) $('#tTurnSec').value = String(ts.turnSec); if (!dirty.walls) $('#tWalls').value = String(ts.wallCount || 10);
+    if (!dirty.sec && !dirty.walls) $('#tApplied').textContent = `적용됨: ${ts.turnSec}초 · 벽 ${ts.wallCount || 10}개`; $('#tUnit').textContent = ts.bank.label;
     $('#tStart').disabled = ts.status !== 'lobby'; $('#tStart').style.display = ts.status === 'lobby' ? '' : 'none';
     $('#tPause').disabled = ts.status !== 'playing';
     $('#tPauseIc').src = UI + (ts.paused ? 'ic_play.png' : 'ic_pause.png'); $('#tPauseTx').textContent = ts.paused ? '다시 시작' : '일시정지';
@@ -535,6 +548,7 @@
       : ts.status === 'lobby' ? `👋 학생들에게 방 코드 <b>${esc(ts.code)}</b>${info?.studentUrl ? ` 와 주소 <b>${esc(info.studentUrl)}</b>` : ''} 를 알려 주세요. 모두 들어오면 위의 [게임 시작]! (지금 ${on}명)` : '';
     $('#helpList').innerHTML = (ts.help || []).filter(h => h.help || h.attempts > 0).map(h => `<div class="help-item"><span class="who">${h.help ? '🙋' : '🎤'} <b>${esc(h.name)}</b> ${h.help ? '학생이 확인을 요청했어요' : `${h.attempts}/2회 인식 실패`} · “${esc(h.text)}”</span><button class="gbtn orange sm" data-approve="${h.matchId}">말하기 통과 승인</button></div>`).join('');
     $$('#helpList [data-approve]').forEach(b => b.onclick = () => approve(b.dataset.approve));
+    if (watchId) renderWatch();
     if (tTab === 'overview') syncCards($('#tMatchesMini'), cardCache.mini, matches, true);
     if (tTab === 'live') syncCards($('#tMatches'), cardCache.full, matches, false);
     const ranked = [...ts.students].sort((a, b) => b.score - a.score || b.w - a.w || b.rate - a.rate || a.l - b.l || a.name.localeCompare(b.name, 'ko'));
@@ -543,6 +557,34 @@
     $('#tRanking').innerHTML = ranked.length ? rankTable(ranked, null, { note: false }) : '<div class="empty">참가자를 기다리고 있어요.</div>';
     if (tTab === 'bank') renderBanks();
     if (tTab === 'records' && tRec !== 'wrong') renderRecords();
+  }
+  /* ── 경기 크게 보기(관전) ── */
+  let watchId = null, watchLast = null;
+  function openWatch(id) { watchId = id; watchLast = null; $('#mWatch').classList.add('on'); renderWatch(); }
+  $('#mWatch').addEventListener('click', e => { if (e.target.id === 'mWatch' || e.target.closest('[data-close]')) watchId = null; });
+  function renderWatch() {
+    if (!watchId || !$('#mWatch').classList.contains('on')) { watchId = null; return; }
+    const live = (pub?.matches || []).find(m => m.id === watchId);
+    const m = live || watchLast; if (!m) { $('#watchBody').innerHTML = '<div class="empty">경기를 찾을 수 없어요.</div>'; return; }
+    watchLast = m;
+    const extra = live ? ts.qs?.[m.id] : null, q = extra?.q, who = m.names[m.board.turn];
+    const stu = id => ts.students.find(s => s.id === id);
+    const pl = i => { const s = stu(m.ids[i]); const max = m.board.max ?? 10;
+      return `<div class="w-pl ${i ? 'red' : 'blue'} ${live && m.board.turn === i ? 'turn' : ''}">${avImg(m.avs?.[i], 'sm')}<div><b>${esc(m.names[i])}</b><small>${s ? recTxt(s) : '연습 상대 로봇'}</small></div><div class="wl"><small>남은 벽</small><br><b>${m.board.left[i]}</b>/${max}</div></div>`; };
+    const status = !live ? '🏁 경기가 끝났어요' : ts.paused ? '⏸ 일시정지 중' : m.phase === 'ai' ? '🤖 AI가 생각 중' : m.phase === 'action' ? `✅ ${esc(who)} 미션 통과 · 이동 또는 벽을 고르는 중` : `📘 ${esc(who)} 영어 미션 중${m.attempts ? ` (${m.attempts}/2 실패)` : ''}`;
+    const L = extra?.last, lastTxt = !L ? '' : L.kind === 'quiz' ? `${esc(m.names[L.who])}: 문제 ${L.success ? '정답 ✅' : '오답 ❌'}` : L.kind === 'speak' ? `${esc(m.names[L.who])}: 말하기 ${L.success ? '성공 ✅' : `실패 ❌ (일치도 ${L.score}%)`}` : L.kind === 'move' ? `${esc(m.names[L.who])}: 말 이동` : L.kind === 'wall' ? `${esc(m.names[L.who])}: 벽 설치` : L.kind === 'timeout' ? `${esc(m.names[L.who])}: 시간 초과` : L.kind === 'approve' ? `${esc(m.names[L.who])}: 교사 승인` : '';
+    const qHtml = q ? `<div class="w-box"><div class="lbl">📋 ${esc(who)}의 현재 ${q.mode === 'quiz' ? '문제' : '말하기 문장'} ${q.unit ? `· ${q.unit}단원` : ''}</div><div class="qt">${esc(q.text)}</div>${q.options ? `<ol type="A">${q.options.map((o, i) => `<li class="${i === q.answer ? 'ans' : ''}">${esc(o)}${i === q.answer ? ' ✔' : ''}</li>`).join('')}</ol>` : q.meaning ? `<small class="muted">${esc(q.meaning)}</small>` : ''}</div>` : '';
+    const side = extra?.side;
+    $('#watchBody').innerHTML = `<div class="w-head"><h2>🔍 경기 ${m.no}</h2><span class="tag">${m.ids.includes('AI') ? '🤖 AI와 대결' : '👥 친구 대결'}</span><span class="tag">⏱ ${live ? m.secs + '초' : '-'}</span><span class="tag">🎲 ${m.board.moves}번째 행동</span></div>
+      <div class="w-grid"><div class="w-board"><canvas id="watchCanvas" width="900" height="900"></canvas>${live ? '' : '<div class="w-ended">🏁 경기가 끝났어요<br><small>목록에서 다른 경기를 골라 보세요</small></div>'}</div>
+      <div class="w-side">${pl(0)}${pl(1)}
+        <div class="w-box"><div class="lbl">지금 상황</div><b>${status}</b>${lastTxt ? `<br><small class="muted">최근: ${lastTxt}</small>` : ''}</div>
+        ${qHtml}
+        ${side ? `<div class="w-box"><div class="lbl">영어 미션 성공 / 실패</div><span class="w">${esc(m.names[0])} ${side[0].ok} / ${side[0].no}</span> · <span class="l">${esc(m.names[1])} ${side[1].ok} / ${side[1].no}</span></div>` : ''}
+        ${live && ts.mode === 'speak' && m.phase === 'question' && !ts.paused ? `<button class="gbtn orange" id="watchApprove">🎤 ${esc(who)} 말하기 통과 승인</button>` : ''}
+      </div></div>`;
+    QBoard.draw($('#watchCanvas'), m.board, { colors: ['blue', 'red'], turn: live ? m.board.turn : null });
+    $('#watchApprove')?.addEventListener('click', () => approve(m.id));
   }
   async function approve(matchId) { const r = await emit('teacher:approve', { matchId }); toast(r.ok ? `✅ ${r.name} 학생 말하기를 통과시켰어요.` : r.message); }
   function renderTeacherFinal() {
