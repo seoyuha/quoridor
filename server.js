@@ -44,7 +44,7 @@ const scoreOf = s => s.w * POINTS.win + s.d * POINTS.draw + missions(s) * POINTS
 function cleanSel(sel) { const v = [...new Set((Array.isArray(sel) ? sel : []).filter(x => SOURCES.includes(x)))]; return v.length ? v : ['u10']; }
 function createRoom(mode, units) {
   const r = {
-    code: newCode(), token: rid(24), mode: mode === 'speak' ? 'speak' : 'quiz', turnSec: 90,
+    code: newCode(), token: rid(24), mode: mode === 'speak' ? 'speak' : 'quiz', turnSec: 90, wallCount: 10,
     sel: cleanSel(units).filter(x => x !== 'custom').length ? cleanSel(units).filter(x => x !== 'custom') : ['u10'],
     custom: { quiz: [], speak: [], name: { quiz: '', speak: '' } },
     status: 'lobby', paused: false, createdAt: now(), startedAt: null, endedAt: null,
@@ -97,7 +97,7 @@ function recordQuestion(s, q, success, choice) {
 function startMatch(r, a, b) {
   const ids = [a.id, b ? b.id : 'AI'];
   if (Math.random() < 0.5 && b) ids.reverse(); // 선공(파랑)을 무작위로
-  const m = { id: rid(6), no: ++r.matchSeq, ids, board: E.initial(), phase: 'question', q: null, attempts: 0, deadline: 0, remaining: 0, aiAt: 0,
+  const m = { id: rid(6), no: ++r.matchSeq, ids, board: E.initial(r.wallCount || 10), phase: 'question', q: null, attempts: 0, deadline: 0, remaining: 0, aiAt: 0,
     startedAt: now(), endedAt: null, winner: null, reason: '', side: [{ ok: 0, no: 0 }, { ok: 0, no: 0 }], last: null, help: false };
   r.matches.set(m.id, m);
   for (const sid of ids) {
@@ -160,23 +160,25 @@ function matchmake(r, { kickoff = false } = {}) {
   const humanGames = [...r.matches.values()].filter(m => m.phase !== 'ended' && !m.ids.includes('AI')).length;
   const comingBack = [...r.students.values()].filter(s => s.state === 'result' && online(s)).length;
   if (kickoff) waiting.sort(() => Math.random() - .5);
-  while (waiting.length >= 2) {
-    const a = waiting[0];
-    let bi = -1, best = Infinity;
-    for (let i = 1; i < waiting.length; i++) {
-      const b = waiting[i];
-      const sc = (a.opps[b.id] || 0) * 10 + (a.lastOpp === b.id ? 100 : 0) + (b.lastOpp === a.id ? 100 : 0);
-      if (sc < best) { best = sc; bi = i; }
-    }
-    // 방금 붙은 상대밖에 없으면 다른 친구가 곧 끝날 수 있으니 잠깐 기다림
-    if (!kickoff && best >= 100 && (humanGames > 0 || comingBack > 0) && now() - a.since < REMATCH_WAIT_MS) break;
-    const b = waiting.splice(bi, 1)[0]; waiting.shift();
+  void humanGames; void comingBack;
+  // 한 번 대결한 친구와는 다시 매칭하지 않음
+  const fresh = (a, b) => !a.opps[b.id] && !b.opps[a.id];
+  const left = [];
+  while (waiting.length) {
+    const a = waiting.shift();
+    const cands = waiting.filter(b => fresh(a, b));
+    if (!cands.length) { left.push(a); continue; }
+    // 새 상대 후보가 가장 적은 친구부터 짝지어 남는 사람을 줄임
+    const choices = b => waiting.filter(x => x !== b && fresh(b, x)).length;
+    cands.sort((x, y) => choices(x) - choices(y));
+    const b = cands[0]; waiting.splice(waiting.indexOf(b), 1);
     startMatch(r, a, b);
   }
-  if (waiting.length === 1) {
-    const a = waiting[0], waited = now() - a.since;
-    const othersBusy = humanGames + comingBack + [...r.matches.values()].filter(m => m.phase !== 'ended' && m.ids.includes('AI') && m.ids[0] !== a.id && m.ids[1] !== a.id).length;
-    if (kickoff || (othersBusy === 0 && waited >= 1200) || waited >= SOLO_WAIT_MS) startMatch(r, a, null);
+  // 짝이 없는 학생: 아직 안 붙어 본 친구가 경기 중이면 잠깐 기다리고, 없으면 AI와 매칭
+  for (const a of left) {
+    const waited = now() - a.since;
+    const unplayedBusy = [...r.students.values()].some(s => s !== a && online(s) && (s.state === 'match' || s.state === 'result') && fresh(a, s));
+    if (kickoff || !unplayedBusy || waited >= SOLO_WAIT_MS) startMatch(r, a, null);
   }
 }
 function enqueue(s) { s.state = 'queue'; s.since = now(); s.matchId = null; }
@@ -234,7 +236,7 @@ function publicMatch(r, m) {
 function playerCard(s) { return { id: s.id, name: s.name, av: s.av ?? 0, w: s.w, l: s.l, d: s.d, rate: rate(s), online: online(s), state: s.state, ai: s.ai, games: s.w + s.l + s.d }; }
 function publicState(r) {
   const live = [...r.matches.values()].filter(m => m.phase !== 'ended');
-  return { code: r.code, mode: r.mode, unitLabel: selLabel(r), status: r.status, paused: r.paused, turnSec: r.turnSec,
+  return { code: r.code, mode: r.mode, unitLabel: selLabel(r), status: r.status, paused: r.paused, turnSec: r.turnSec, wallCount: r.wallCount || 10,
     players: [...r.students.values()].map(playerCard),
     matches: live.sort((a, b) => a.no - b.no).map(m => publicMatch(r, m)),
     waiting: [...r.students.values()].filter(s => s.state === 'queue' && online(s)).map(s => s.name),
@@ -259,7 +261,7 @@ function teacherState(r) {
   const students = [...r.students.values()].map(s => ({ ...playerCard(s), score: scoreOf(s), missions: missions(s), stats: s.stats }));
   const help = [...r.matches.values()].filter(m => m.phase === 'question' && r.mode === 'speak' && (m.help || m.attempts > 0)).map(m => ({ matchId: m.id, no: m.no, name: nameOf(r, m.ids[m.board.turn]), attempts: m.attempts, help: m.help, text: m.q?.text || '' }));
   const totalGames = r.history.length, aiGames = r.history.filter(h => h.ids.includes('AI')).length;
-  return { code: r.code, mode: r.mode, status: r.status, paused: r.paused, turnSec: r.turnSec, maxStudents: MAX_STUDENTS,
+  return { code: r.code, mode: r.mode, status: r.status, paused: r.paused, turnSec: r.turnSec, wallCount: r.wallCount || 10, maxStudents: MAX_STUDENTS,
     bank: { sel: r.sel, label: selLabel(r),
       units: UNIT_IDS.map(id => ({ id, no: UNITS[id].no, title: UNITS[id].title, topic: UNITS[id].topic, quiz: UNITS[id].quiz.length, speak: UNITS[id].speak.length })),
       custom: { quiz: r.custom.quiz.length, speak: r.custom.speak.length, name: r.custom.name },
@@ -326,6 +328,7 @@ function restore() {
       const r = { ...raw, teacherSockets: new Set(), students: new Map(raw.students.map(s => [s.id, { ...s, socket: null, goneAt: now() }])), matches: new Map() };
       for (const m of raw.matches) { m.deadline = now() + (m.remaining || 0); r.matches.set(m.id, m); }
       if (!Array.isArray(r.sel)) r.sel = ['u10'];
+      if (!r.wallCount) r.wallCount = 10;
       if (!r.custom) r.custom = { quiz: [], speak: [], name: { quiz: '', speak: '' } };
       delete r.banks; delete r.bankSource;
       if (r.status === 'playing') r.paused = true; // 교사가 '재개'를 눌러야 다시 진행
@@ -384,8 +387,13 @@ io.on('connection', socket => {
   });
   socket.on('teacher:turnSec', ({ sec } = {}, cb) => {
     const r = teacherRoom(socket); if (!r) return no(cb, '교사 권한이 없습니다.');
-    const v = Number(sec); if (![45, 60, 90, 120, 180].includes(v)) return no(cb, '잘못된 시간');
+    const v = Number(sec); if (![30, 45, 60, 90, 120, 180].includes(v)) return no(cb, '잘못된 시간');
     r.turnSec = v; ok(cb); flush(r);
+  });
+  socket.on('teacher:walls', ({ n } = {}, cb) => {
+    const r = teacherRoom(socket); if (!r) return no(cb, '교사 권한이 없습니다.');
+    const v = Number(n); if (!Number.isInteger(v) || v < 5 || v > 10) return no(cb, '벽은 5~10개 중에서 고를 수 있어요.');
+    r.wallCount = v; ok(cb); flush(r);
   });
   socket.on('teacher:units', ({ sel } = {}, cb) => {
     const r = teacherRoom(socket); if (!r) return no(cb, '교사 권한이 없습니다.');

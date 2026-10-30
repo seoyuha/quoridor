@@ -183,8 +183,8 @@
     if (m.phase === 'ai') { $('#timerTxt').textContent = '🤖 생각 중'; $('#timerBar').style.width = '100%'; tm.classList.remove('low'); }
     else { $('#timerTxt').textContent = (m.ended ? 0 : m.secs) + '초'; $('#timerBar').style.width = Math.max(0, Math.min(100, m.secs / total * 100)) + '%'; tm.classList.toggle('low', !m.ended && m.secs <= 10); }
     $('#wlMe').textContent = $('#wlMe2').textContent = b.left[my]; $('#wlOpp').textContent = $('#wlOpp2').textContent = b.left[opp];
-    $('#wsMe').innerHTML = Array.from({ length: 10 }, (_, i) => `<i class="${i < b.left[my] ? '' : 'used'}"></i>`).join('');
-    $('#wsOpp').innerHTML = Array.from({ length: 10 }, (_, i) => `<i class="${i < b.left[opp] ? '' : 'used'}"></i>`).join('');
+    $('#wsMe').innerHTML = Array.from({ length: b.max ?? 10 }, (_, i) => `<i class="${i < b.left[my] ? '' : 'used'}"></i>`).join('');
+    $('#wsOpp').innerHTML = Array.from({ length: b.max ?? 10 }, (_, i) => `<i class="${i < b.left[opp] ? '' : 'used'}"></i>`).join('');
     $('#pausedCover').classList.toggle('on', !!pub.paused);
     const canAct = m.myTurn && m.phase === 'action' && !pub.paused;
     if (!canAct) { preview = null; tool = 'move'; }
@@ -369,7 +369,7 @@
         <div class="res-grid">${card(left, !draw)}<div class="res-board"><canvas id="resCanvas" width="800" height="800"></canvas></div>${card(right, false)}</div>
         <div class="res-stats">
           <div class="rs"><img src="${UI}st_watch.png" alt=""><div><small>게임 시간</small><b>${mmss(m.durationSec || 0)}</b></div></div>
-          <div class="rs"><img src="${UI}st_wall.png" alt=""><div><small>사용한 벽 (나 / 상대)</small><b><span class="w">${10 - m.board.left[my]}개</span> / <span class="l">${10 - m.board.left[1 - my]}개</span></b></div></div>
+          <div class="rs"><img src="${UI}st_wall.png" alt=""><div><small>사용한 벽 (나 / 상대)</small><b><span class="w">${(m.board.max ?? 10) - m.board.left[my]}개</span> / <span class="l">${(m.board.max ?? 10) - m.board.left[1 - my]}개</span></b></div></div>
           <div class="rs"><img src="${UI}st_check.png" alt=""><div><small>내 영어 미션 성공 / 실패</small><b><span class="g">${side.ok}개</span> / <span class="l">${side.no}개</span></b></div></div>
           <div class="rs next"><img src="${UI}st_watch.png" alt=""><div><small>다음 게임이 곧 시작됩니다!</small><b id="nextLeft">${p.resultLeft}초 후 자동 매칭</b></div></div>
         </div>`;
@@ -403,6 +403,7 @@
   seg($('#tView'), tView, v => { tView = v; seg($('#tView'), v); $('#tMatches').classList.toggle('list', v === 'list'); });
   seg($('#tRec'), tRec, v => { tRec = v; seg($('#tRec'), v); if (v === 'wrong') loadAnalysis(); renderRecords(); });
   seg($('#tMode'), 'quiz', async v => { const r = await emit('teacher:mode', { mode: v }); toast(r.ok ? (v === 'speak' ? '말하기 활동으로 바꿨어요.' : '문제 풀기 활동으로 바꿨어요.') : r.message); });
+  $('#tWalls').onchange = async e => { const r = await emit('teacher:walls', { n: Number(e.target.value) }); toast(r.ok ? `벽 개수: ${e.target.value}개 (다음 경기부터 적용)` : r.message); };
   $('#tTurnSec').onchange = async e => { const r = await emit('teacher:turnSec', { sec: Number(e.target.value) }); toast(r.ok ? `차례 시간: ${e.target.value}초 (다음 차례부터)` : r.message); };
   $('#tStart').onclick = async () => { const r = await emit('teacher:start', {}); toast(r.ok ? '🎲 경기를 시작했어요! 2명씩 자동으로 매칭됩니다.' : r.message); };
   $('#tPause').onclick = async () => { const r = await emit('teacher:pause', {}); if (!r.ok) toast(r.message); };
@@ -519,7 +520,7 @@
     $('#tLive').style.display = live ? '' : 'none'; $('#tFinal').style.display = live ? 'none' : '';
     $('#tCode').textContent = ts.code;
     $('#tUrl').innerHTML = info?.studentUrl ? `학생 접속 주소: <b>${esc(info.studentUrl)}</b> · 방 코드 <b>${esc(ts.code)}</b>` : '';
-    seg($('#tMode'), ts.mode); $('#tTurnSec').value = String(ts.turnSec); $('#tUnit').textContent = ts.bank.label;
+    seg($('#tMode'), ts.mode); $('#tTurnSec').value = String(ts.turnSec); $('#tWalls').value = String(ts.wallCount || 10); $('#tUnit').textContent = ts.bank.label;
     $('#tStart').disabled = ts.status !== 'lobby'; $('#tStart').style.display = ts.status === 'lobby' ? '' : 'none';
     $('#tPause').disabled = ts.status !== 'playing';
     $('#tPauseIc').src = UI + (ts.paused ? 'ic_play.png' : 'ic_pause.png'); $('#tPauseTx').textContent = ts.paused ? '다시 시작' : '일시정지';

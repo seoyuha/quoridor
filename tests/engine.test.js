@@ -30,4 +30,5 @@ for (let g = 0; g < 30; g++) {
   while (x.winner === null && n < 300) { const a = E.aiAction(x); const who = x.turn; const ok = a.kind === 'move' ? E.move(x, who, a.r, a.c) : E.place(x, who, a.r, a.c, a.o); assert.ok(ok, 'AI 합법 수'); n++; }
   assert.ok(x.winner !== null, 'AI끼리 대결이 끝남');
 }
+{ const w = E.initial(5); assert.deepEqual(w.left, [5, 5]); w.left = [0, 5]; assert.equal(E.checkWall(w, 0, 3, 3, 'h').ok, false, '벽을 다 쓰면 설치 불가'); }
 console.log('✓ engine: 이동·점프·대각선·벽 겹침/교차/봉쇄 금지·승리·AI 합법 수');

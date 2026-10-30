@@ -9,11 +9,12 @@
   const N = 9, WALLS = 10;
   const GOAL = [0, 8];
 
-  function initial() {
-    return { p: [[8, 4], [0, 4]], walls: [], left: [WALLS, WALLS], turn: 0, moves: 0, winner: null };
+  function initial(walls = WALLS) {
+    const n = Math.max(0, Math.min(10, Math.floor(walls)));
+    return { p: [[8, 4], [0, 4]], walls: [], left: [n, n], max: n, turn: 0, moves: 0, winner: null };
   }
   function clone(b) {
-    return { p: b.p.map(x => [...x]), walls: b.walls.map(w => ({ ...w })), left: [...b.left], turn: b.turn, moves: b.moves, winner: b.winner };
+    return { p: b.p.map(x => [...x]), walls: b.walls.map(w => ({ ...w })), left: [...b.left], max: b.max, turn: b.turn, moves: b.moves, winner: b.winner };
   }
   function blockedSet(walls) {
     const s = new Set();

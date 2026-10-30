@@ -55,7 +55,7 @@
     <li><b>입장</b> — 캐릭터를 고르고, 4자리 방 코드와 이름을 넣어요.</li>
     <li><b>자동 매칭</b> — 선생님이 시작하면 2명씩 짝이 지어져요. 짝이 없으면 🤖 AI와 대결해요.</li>
     <li><b>영어 미션</b> — 내 차례마다 미션이 나와요.<br>📄 <b>문제 풀기</b>: 5개 중 정답을 고르면 통과! 틀리면 차례가 넘어가요.<br>🎤 <b>말하기</b>: 문장을 소리 내어 읽으면 AI가 성공·실패를 알려줘요. 기회는 2번!</li>
-    <li><b>행동</b> — 통과하면 <b>말 이동</b>(빛나는 칸) 또는 <b>벽 놓기</b>(나무 벽 10개) 중 하나! 벽으로 길을 완전히 막을 수는 없어요.</li>
+    <li><b>행동</b> — 통과하면 <b>말 이동</b>(빛나는 칸) 또는 <b>벽 놓기</b>(나무 벽, 선생님이 정한 개수) 중 하나! 벽으로 길을 완전히 막을 수는 없어요.</li>
     <li><b>승리</b> — 맞은편 <b style="color:#d9473f">빨간 줄</b>에 먼저 도착하면 승리! 끝나면 자동으로 다음 상대와 경기해요.</li>
     <li><b>최종 순위</b> — 선생님이 게임을 끝내면 총점(승 10점 · 무 5점 · 영어 미션 성공 1점)으로 순위가 정해져요.</li>
   </ol>
@@ -144,7 +144,8 @@
     <div class="chip code-chip"><small>방 코드</small><b id="tCode">----</b><span class="chip-btns"><button class="mini" id="copyCode" title="방 코드 복사">⧉</button><button class="mini" id="qrBtn" title="학생 접속 QR">▦</button></span></div>
     <div class="chip mode-chip"><small>영어 활동</small><div class="seg dark" id="tMode"><button data-v="quiz">📄 문제 풀기</button><button data-v="speak">🎤 말하기</button></div></div>
     <button class="chip unit-chip" id="tUnitChip" title="문제 단원 바꾸기"><small>문제 단원 ✎</small><b id="tUnit">-</b></button>
-    <div class="chip"><small>차례 시간</small><select id="tTurnSec"><option value="45">45초</option><option value="60">60초</option><option value="90" selected>90초</option><option value="120">120초</option><option value="180">180초</option></select></div>
+    <div class="chip"><small>차례 시간</small><select id="tTurnSec"><option value="30">30초</option><option value="45">45초</option><option value="60">60초</option><option value="90" selected>90초</option><option value="120">120초</option><option value="180">180초</option></select></div>
+    <div class="chip"><small>벽 개수</small><select id="tWalls"><option value="5">5개</option><option value="6">6개</option><option value="7">7개</option><option value="8">8개</option><option value="9">9개</option><option value="10" selected>10개</option></select></div>
     <div class="t-actions">
       <button class="imgbtn start" id="tStart" aria-label="게임 시작"><img src="/assets/ui/btn_start.png" alt="게임 시작"></button>
       <button class="gbtn blue" id="tPause" disabled><img class="ici" id="tPauseIc" src="/assets/ui/ic_pause.png" alt=""><span id="tPauseTx">일시정지</span></button>

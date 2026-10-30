@@ -55,6 +55,11 @@ function student(sock) { const st = { sock, me: null, pub: null }; sock.on('me',
   const T0 = await connect(); const c0 = await emit(T0, 'teacher:create', { mode: 'speak', units: ['u11', 'u12'] });
   assert.deepEqual(srv.rooms.get(c0.code).sel, ['u11', 'u12']); T0.close();
   console.log('✓ 교사가 단원(10·11·12, 여러 개 가능)을 고르면 그 단원 문제가 나옴');
+  assert.ok((await emit(T, 'teacher:turnSec', { sec: 30 })).ok, '30초 선택 가능');
+  assert.ok(!(await emit(T, 'teacher:walls', { n: 4 })).ok && !(await emit(T, 'teacher:walls', { n: 11 })).ok);
+  assert.ok((await emit(T, 'teacher:walls', { n: 6 })).ok); assert.equal(room.wallCount, 6);
+  await emit(T, 'teacher:walls', { n: 10 }); await emit(T, 'teacher:turnSec', { sec: 90 });
+  console.log('✓ 차례 시간 30초, 벽 개수 5~10개 설정');
 
   // 퀴즈: 오답이면 차례가 넘어감
   const mid = first.me.match.id, m = room.matches.get(mid);
@@ -137,6 +142,11 @@ function student(sock) { const st = { sock, me: null, pub: null }; sock.on('me',
   assert.equal(turnS.me.me.w, 1); assert.equal(other.me.me.l, 1);
   await until(() => turnS.me.me.state === 'match' && other.me.me.state === 'match', 4000, '자동 재매칭');
   console.log('✓ 경기가 끝나면 승패 기록 → 결과 화면 → 자동으로 다음 경기 시작');
+  { // 방금 대결한 친구와 다시 붙지 않음 → 새 상대(또는 AI)
+    const m1 = room.matches.get(room.students.get(turnS.sid).matchId), m2 = room.matches.get(room.students.get(other.sid).matchId);
+    assert.ok(!m1.ids.includes(other.sid) && !m2.ids.includes(turnS.sid), '같은 상대와 재매칭 금지');
+  }
+  console.log('✓ 이미 대결한 친구와는 다시 매칭되지 않음');
 
   // 늦게 들어온 학생도 자동 매칭
   const late = student(await connect());
